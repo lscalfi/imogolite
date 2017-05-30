@@ -1,0 +1,8 @@
+1- Form a slab with 'form_slab.py'
+Change the desired diameter n at the beginning of the code
+
+2- Fold the slab into a nanotube with 'flat_to_nt.py'
+Change the desired diameter n at the beginning of the code
+
+3- Create an XYZ file with 'file_to_xyz.sh'
+Change the desired diameter n at the beginning of the code
