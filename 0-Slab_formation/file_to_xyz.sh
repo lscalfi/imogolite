@@ -1,10 +1,13 @@
 # Script to make a xyz file
 
-python symmetry_polar.py
-python nt_to_flat.py
-
 n=10
 motif=20
+
+sed -i -e "s/XXXX/$n/g" symmetry_polar.py
+sed -i -e "s/XXXX/$n/g" nt_to_flat.py
+
+python symmetry_polar.py
+python nt_to_flat.py
 
 touch atoms
 for (( unit=0; unit<$n; unit++))

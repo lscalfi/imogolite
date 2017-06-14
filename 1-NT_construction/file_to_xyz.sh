@@ -1,6 +1,9 @@
 # Script to make a xyz file
 
-n=16
+n=$1
+
+sed -i -e "s/XXXX/$n/g" form_slab.py
+sed -i -e "s/XXXX/$n/g" flat_to_nt.py
 
 touch atoms
 for (( unit=0; unit<$n; unit++))
