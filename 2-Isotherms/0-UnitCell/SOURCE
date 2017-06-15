@@ -1,0 +1,5 @@
+Optimized structure with LAMMPS (extended-CLAFF model):
+nt12.opt.xyz: ~/Work/7-MD_LAMMPS_CLAYFF/1-NT12/0-Optimisation/nt12.opt.xyz
+
+Topology file (see 3-Analysis/create_topology.sh)
+topology.pdb: ~/Work/7-MD_LAMMPS_CLAYFF/1-NT12/Input/nanotube_12_HB1_5.pdb
