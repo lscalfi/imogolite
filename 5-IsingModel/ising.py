@@ -4,11 +4,12 @@ import math
 
 #units: kcal/mol
 
-diameter = 12
+diameter = DIAMETER
 units = 5
-p_ads = 0.4
-p_des = 0.4
-p_silanol = 0.2
+p_gcmc = 0.7
+p_rot = 0.2
+p_silanol = 0.1
+J = 1
 
 def kron(a, b):
     if a == True and b == True:
@@ -22,7 +23,6 @@ def infi(a, b):
 
 def energy(sub_nt):
     H = 0
-    J = 6
     assert(sub_nt.shape == (3, 3))
     if sub_nt[0, 0] == 0: #green type
         H += infi(sub_nt[1, 1] == 8, sub_nt[0, 1] == 4)
@@ -121,26 +121,37 @@ def adsorption(tube):
     nanotube = np.copy(tube)
     #try adsorption or rotation of water
     print("Adsorption move")
+
     trial_ring = random.randrange(1, 2 * 2 * units, 2)
     trial_triangle = random.randint(0, 2 * diameter - 1)
 
-    print(str(trial_ring) + ', ' + str(trial_triangle))
+    while not (nanotube[trial_ring, trial_triangle] == 7):
+        trial_ring = random.randrange(1, 2 * 2 * units, 2)
+        trial_triangle = random.randint(0, 2 * diameter - 1)
 
-    ads = False
-    if nanotube[trial_ring, trial_triangle] == 7:
-        ads = True
+    print(str(trial_ring) + ', ' + str(trial_triangle))
 
     orientation = random.randint(8, 13)
 
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
     H1 = energy(sub_nt)
+    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
+        H1 -= J
+    if sub_nt[1, 1] > 10:
+        H1 -= 2 * J
+
     nanotube[trial_ring, trial_triangle] = orientation
     sub_nt[1, 1] = orientation
     H2 = energy(sub_nt)
+    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
+        H2 -= J
+    if sub_nt[1, 1] > 10:
+        H2 -= 2 * J
+
     dH = H2 - H1
 
     print("dH = " + str(dH))
-    return nanotube, dH, ads
+    return nanotube, dH
 
 def desorption(tube):
     nanotube = np.copy(tube)
@@ -148,20 +159,58 @@ def desorption(tube):
     trial_ring = random.randrange(1, 2 * 2 * units, 2)
     trial_triangle = random.randint(0, 2 * diameter - 1)
     
+    while nanotube[trial_ring, trial_triangle] == 7:
+        trial_ring = random.randrange(1, 2 * 2 * units, 2)
+        trial_triangle = random.randint(0, 2 * diameter - 1)
+
     print(str(trial_ring) + ', ' + str(trial_triangle))
 
-    des = False
-    dH = 2e+32
-
-    if not (nanotube[trial_ring, trial_triangle] == 7) :
-        sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
-        dH = - energy(sub_nt)
-        des = True
+    sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
+    dH = - energy(sub_nt)
+    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
+        dH += J
+    if sub_nt[1, 1] > 10:
+        dH += 2 * J
 
     nanotube[trial_ring, trial_triangle] = 7
 
     print("dH = " + str(dH))
-    return nanotube, dH, des
+    return nanotube, dH
+
+def rotationW(tube):
+    nanotube = np.copy(tube)
+    #try rotation of water
+    print("Water rotation move")
+    trial_ring = random.randrange(1, 2 * 2 * units, 2)
+    trial_triangle = random.randint(0, 2 * diameter - 1)
+
+    print(str(trial_ring) + ', ' + str(trial_triangle))
+
+    while nanotube[trial_ring, trial_triangle] == 7:
+        trial_ring = random.randrange(1, 2 * 2 * units, 2)
+        trial_triangle = random.randint(0, 2 * diameter - 1)
+
+    orientation = random.randint(8, 13)
+
+    sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
+    H1 = energy(sub_nt)
+    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
+        H1 -= J
+    if sub_nt[1, 1] > 10:
+        H1 -= 2 * J
+
+    nanotube[trial_ring, trial_triangle] = orientation
+    sub_nt[1, 1] = orientation
+    H2 = energy(sub_nt)
+    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
+        H2 -= J
+    if sub_nt[1, 1] > 10:
+        H2 -= 2 * J
+
+    dH = H2 - H1
+
+    print("dH = " + str(dH))
+    return nanotube, dH
 
 def rotationSi(tube):
     nanotube = np.copy(tube)
@@ -196,21 +245,41 @@ def rotationSi(tube):
     print("dH = " + str(dH))
     return nanotube, dH
 
-def accept(dH, beta):
+def accept_NVT(dH, beta):
     if dH < 0:
         return True
-    elif dH > 2e30:
-        return False
+    #elif dH > 2e30:
+        #return False
     else:
         ran = random.random()
         if ran < math.exp(-beta * dH):
             return True
     return False
 
-def main(steps, temp):
+def accept_ads(dH, beta, n_ads, mu):
+    acc = 2 * units * 2 * diameter / (n_ads + 1) * math.exp(beta * mu - beta * dH)
+    if acc > 1:
+        return True
+    else:
+        ran = random.random()
+        if ran < acc:
+            return True
+    return False
+
+def accept_des(dH, beta, n_ads, mu):
+    acc = n_ads / 2 * units * 2 * diameter * math.exp(beta * mu - beta * dH)
+    if acc > 1:
+        return True
+    else:
+        ran = random.random()
+        if ran < acc:
+            return True
+    return False
+
+def main(steps, temp, mu):
     random.seed()
     H = 0
-    beta = 1/(1.987e-3*temp)
+    beta = 1/temp
     nt = np.zeros((2 * 2 * units, 2 * diameter))
 
     initialize(nt)
@@ -221,46 +290,63 @@ def main(steps, temp):
         print("Step: " + str(n))
         trial = random.uniform(0, 1)
 
-        if trial < p_ads :
-            nt_post, dH, ads = adsorption(nt)
-            if accept(dH, beta) :
-                print("Accepted")
-                nt = nt_post
-                H += dH
-                if ads :
-                    n_ads +=1
-            else :
-                print("Rejected")
-            print_nt(nt)
-            print("N_ads = " + str(n_ads) + "\n")
+        if trial < p_gcmc:
+            if trial < 0.5:
+#water adsorption
+                if n_ads == 2 * 2 * units * diameter:
+                    print("Rejected")
+                else:
+                    nt_post, dH = adsorption(nt)
+                    if accept_ads(dH, beta, n_ads, mu):
+                        print("Accepted")
+                        nt = nt_post
+                        H += dH
+                        n_ads +=1
+                    else :
+                        print("Rejected")
 
-        elif trial < p_ads + p_des :
-            nt_post, dH, des = desorption(nt)
-            if accept(dH, beta) :
-                print("Accepted")
-                nt = nt_post
-                H += dH
-                if des :
-                    n_ads -=1
-            else :
-                print("Rejected")
-            print_nt(nt)
-            print("N_ads = " + str(n_ads) + "\n")
+            else:
+#water desorption
+                if n_ads == 0:
+                    print("Rejected")
+                else:
+                    nt_post, dH = desorption(nt)
+                    if accept_des(dH, beta, n_ads, mu):
+                        print("Accepted")
+                        nt = nt_post
+                        H += dH
+                        n_ads -=1
+                    else :
+                        print("Rejected")
 
-        else :
+        elif trial < p_gcmc + p_rot:
+#water rotation
+            if n_ads == 0:
+                print("Rejected")
+            else:
+                nt_post, dH = rotationW(nt)
+                if accept_NVT(dH, beta):
+                    print("Accepted")
+                    nt = nt_post
+                    H += dH
+                else :
+                    print("Rejected")
+
+        else:
+#silanol rotation
             nt_post, dH = rotationSi(nt)
-            if accept(dH, beta) :
+            if accept_NVT(dH, beta):
                 print("Accepted")
                 nt = nt_post
                 H += dH
             else :
                 print("Rejected")
-            print_nt(nt)
-            print("N_ads = " + str(n_ads) + "\n")
-        print("Energy = " + str(H) + " kcal/mol\n")
+        print_nt(nt)
+        print("N_ads = " + str(n_ads) + "\n")
+        print("Energy = " + str(H) + " HB energy\n")
 
 
 out = open("conf.dat","w")
-main(1000000, 300)
+main(STEPS, TEMP, MU)
 out.close()
 
