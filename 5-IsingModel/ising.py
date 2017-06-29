@@ -10,6 +10,7 @@ p_gcmc = 0.6
 p_rot = 0.2
 p_silanol = 0.2
 J = 1 #-HB interaction
+C = 0.1 #-HB interaction
 K = 40 #w-w repulsive interaction
 
 def kron(a, b):
@@ -29,12 +30,110 @@ def energy(sub_nt):
     H += K * kron(not (sub_nt[1, 0] == 7), not (sub_nt[1, 1] == 7))
     H += K * kron(not (sub_nt[1, 2] == 7), not (sub_nt[1, 1] == 7))
     #HB interaction given from water to sioh
-    H += -J * kron(sub_nt[1, 1] == 8, True)
-    H += -J * kron(sub_nt[1, 1] == 9, True)
-    H += -J * kron(sub_nt[1, 1] == 10, True)
-    H += -2*J * kron(sub_nt[1, 1] == 11, True)
-    H += -2*J * kron(sub_nt[1, 1] == 12, True)
-    H += -2*J * kron(sub_nt[1, 1] == 13, True)
+    if sub_nt[0, 0] == 0: #green type
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[0, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[0, 1] == 2)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[0, 1] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 8, sub_nt[0, 1] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 8, sub_nt[0, 1] == 5)
+
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[2, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[2, 2] == 3)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[2, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 9, sub_nt[2, 2] == 1)
+        H += -C * J * kron(sub_nt[1, 1] == 9, sub_nt[2, 2] == 5)
+
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[2, 0] == 4)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[2, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[2, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 10, sub_nt[2, 0] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 10, sub_nt[2, 0] == 1)
+
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 1] == 2)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 1] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[0, 1] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[0, 1] == 5)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 2] == 3)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[2, 2] == 1)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[2, 2] == 5)
+
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 2] == 3)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[2, 2] == 1)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[2, 2] == 5)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 0] == 4)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[2, 0] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[2, 0] == 1)
+
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 1] == 2)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 1] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[0, 1] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[0, 1] == 5)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 0] == 4)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[2, 0] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[2, 0] == 1)
+
+    else: #red type
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[2, 1] == 3)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[2, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[2, 1] == 5)
+        H += -C * J * kron(sub_nt[1, 1] == 8, sub_nt[2, 1] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 8, sub_nt[2, 1] == 6)
+
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[0, 2] == 1)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[0, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[0, 2] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 9, sub_nt[0, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 9, sub_nt[0, 2] == 6)
+
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[0, 0] == 1)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[0, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[0, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 10, sub_nt[0, 0] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 10, sub_nt[0, 0] == 4)
+
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 1] == 3)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 1] == 5)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[2, 1] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[2, 1] == 6)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 2] == 1)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 2] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[0, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 11, sub_nt[0, 2] == 6)
+
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 2] == 1)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 2] == 2)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 2] == 3)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[0, 2] == 4)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[0, 2] == 6)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 0] == 1)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[0, 0] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 12, sub_nt[0, 0] == 4)
+
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 1] == 3)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 1] == 5)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[2, 1] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[2, 1] == 6)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 0] == 1)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 0] == 5)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 0] == 6)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[0, 0] == 2)
+        H += -C * J * kron(sub_nt[1, 1] == 13, sub_nt[0, 0] == 4)
+
     #HB interaction given from sioh to water
     if sub_nt[0, 0] == 0: #green type
         H += infi(sub_nt[1, 1] == 8, sub_nt[0, 1] == 4)
