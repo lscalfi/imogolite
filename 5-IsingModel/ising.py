@@ -6,14 +6,15 @@ import math
 
 diameter = DIAMETER
 units = 5
-p_gcmc = 0.7
+p_gcmc = 0.6
 p_rot = 0.2
-p_silanol = 0.1
-J = 1
+p_silanol = 0.2
+J = 1 #-HB interaction
+K = 40 #w-w repulsive interaction
 
 def kron(a, b):
     if a == True and b == True:
-        return -1
+        return 1
     return 0
 
 def infi(a, b):
@@ -24,55 +25,66 @@ def infi(a, b):
 def energy(sub_nt):
     H = 0
     assert(sub_nt.shape == (3, 3))
+    #w-w interaction
+    H += K * kron(not (sub_nt[1, 0] == 7), not (sub_nt[1, 1] == 7))
+    H += K * kron(not (sub_nt[1, 2] == 7), not (sub_nt[1, 1] == 7))
+    #HB interaction given from water to sioh
+    H += -J * kron(sub_nt[1, 1] == 8, True)
+    H += -J * kron(sub_nt[1, 1] == 9, True)
+    H += -J * kron(sub_nt[1, 1] == 10, True)
+    H += -2*J * kron(sub_nt[1, 1] == 11, True)
+    H += -2*J * kron(sub_nt[1, 1] == 12, True)
+    H += -2*J * kron(sub_nt[1, 1] == 13, True)
+    #HB interaction given from sioh to water
     if sub_nt[0, 0] == 0: #green type
         H += infi(sub_nt[1, 1] == 8, sub_nt[0, 1] == 4)
-        H += J * kron(sub_nt[1, 1] == 8, sub_nt[2, 0] == 2)
-        H += J * kron(sub_nt[1, 1] == 8, sub_nt[2, 2] == 6)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[2, 0] == 2)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[2, 2] == 6)
 
-        H += J * kron(sub_nt[1, 1] == 9, sub_nt[0, 1] == 4)
-        H += J * kron(sub_nt[1, 1] == 9, sub_nt[2, 0] == 2)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[0, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[2, 0] == 2)
         H += infi(sub_nt[1, 1] == 9, sub_nt[2, 2] == 6)
  
-        H += J * kron(sub_nt[1, 1] == 10, sub_nt[0, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[0, 1] == 4)
         H += infi(sub_nt[1, 1] == 10, sub_nt[2, 0] == 2)
-        H += J * kron(sub_nt[1, 1] == 10, sub_nt[2, 2] == 6)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[2, 2] == 6)
  
         H += infi(sub_nt[1, 1] == 11, sub_nt[0, 1] == 4)
-        H += J * kron(sub_nt[1, 1] == 11, sub_nt[2, 0] == 2)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[2, 0] == 2)
         H += infi(sub_nt[1, 1] == 11, sub_nt[2, 2] == 6)
  
-        H += J * kron(sub_nt[1, 1] == 12, sub_nt[0, 1] == 4)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[0, 1] == 4)
         H += infi(sub_nt[1, 1] == 12, sub_nt[2, 0] == 2)
         H += infi(sub_nt[1, 1] == 12, sub_nt[2, 2] == 6)
  
         H += infi(sub_nt[1, 1] == 13, sub_nt[0, 1] == 4)
         H += infi(sub_nt[1, 1] == 13, sub_nt[2, 0] == 2)
-        H += J * kron(sub_nt[1, 1] == 13, sub_nt[2, 2] == 6)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[2, 2] == 6)
  
     else : #red type
         H += infi(sub_nt[1, 1] == 8, sub_nt[2, 1] == 1)
-        H += J * kron(sub_nt[1, 1] == 8, sub_nt[0, 0] == 3)
-        H += J * kron(sub_nt[1, 1] == 8, sub_nt[0, 2] == 5)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[0, 0] == 3)
+        H += -J * kron(sub_nt[1, 1] == 8, sub_nt[0, 2] == 5)
 
-        H += J * kron(sub_nt[1, 1] == 9, sub_nt[2, 1] == 1)
-        H += J * kron(sub_nt[1, 1] == 9, sub_nt[0, 0] == 3)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[2, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 9, sub_nt[0, 0] == 3)
         H += infi(sub_nt[1, 1] == 9, sub_nt[0, 2] == 5)
  
-        H += J * kron(sub_nt[1, 1] == 10, sub_nt[2, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[2, 1] == 1)
         H += infi(sub_nt[1, 1] == 10, sub_nt[0, 0] == 3)
-        H += J * kron(sub_nt[1, 1] == 10, sub_nt[0, 2] == 5)
+        H += -J * kron(sub_nt[1, 1] == 10, sub_nt[0, 2] == 5)
  
         H += infi(sub_nt[1, 1] == 11, sub_nt[2, 1] == 1)
-        H += J * kron(sub_nt[1, 1] == 11, sub_nt[0, 0] == 3)
+        H += -J * kron(sub_nt[1, 1] == 11, sub_nt[0, 0] == 3)
         H += infi(sub_nt[1, 1] == 11, sub_nt[0, 2] == 5)
  
-        H += J * kron(sub_nt[1, 1] == 12, sub_nt[2, 1] == 1)
+        H += -J * kron(sub_nt[1, 1] == 12, sub_nt[2, 1] == 1)
         H += infi(sub_nt[1, 1] == 12, sub_nt[0, 0] == 3)
         H += infi(sub_nt[1, 1] == 12, sub_nt[0, 2] == 5)
  
         H += infi(sub_nt[1, 1] == 13, sub_nt[2, 1] == 1)
         H += infi(sub_nt[1, 1] == 13, sub_nt[0, 0] == 3)
-        H += J * kron(sub_nt[1, 1] == 13, sub_nt[0, 2] == 5)
+        H += -J * kron(sub_nt[1, 1] == 13, sub_nt[0, 2] == 5)
 
     return H
 
@@ -135,18 +147,10 @@ def adsorption(tube):
 
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
     H1 = energy(sub_nt)
-    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
-        H1 -= J
-    if sub_nt[1, 1] > 10:
-        H1 -= 2 * J
 
     nanotube[trial_ring, trial_triangle] = orientation
     sub_nt[1, 1] = orientation
     H2 = energy(sub_nt)
-    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
-        H2 -= J
-    if sub_nt[1, 1] > 10:
-        H2 -= 2 * J
 
     dH = H2 - H1
 
@@ -167,10 +171,6 @@ def desorption(tube):
 
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
     dH = - energy(sub_nt)
-    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
-        dH += J
-    if sub_nt[1, 1] > 10:
-        dH += 2 * J
 
     nanotube[trial_ring, trial_triangle] = 7
 
@@ -194,18 +194,10 @@ def rotationW(tube):
 
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
     H1 = energy(sub_nt)
-    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
-        H1 -= J
-    if sub_nt[1, 1] > 10:
-        H1 -= 2 * J
 
     nanotube[trial_ring, trial_triangle] = orientation
     sub_nt[1, 1] = orientation
     H2 = energy(sub_nt)
-    if sub_nt[1, 1] > 7 and sub_nt[1, 1] < 11:
-        H2 -= J
-    if sub_nt[1, 1] > 10:
-        H2 -= 2 * J
 
     dH = H2 - H1
 
@@ -257,6 +249,8 @@ def accept_NVT(dH, beta):
     return False
 
 def accept_ads(dH, beta, n_ads, mu):
+    if beta * mu - beta * dH > 10:
+        return True
     acc = 2 * units * 2 * diameter / (n_ads + 1) * math.exp(beta * mu - beta * dH)
     if acc > 1:
         return True
@@ -267,6 +261,8 @@ def accept_ads(dH, beta, n_ads, mu):
     return False
 
 def accept_des(dH, beta, n_ads, mu):
+    if beta * mu - beta * dH > 10:
+        return True
     acc = n_ads / 2 * units * 2 * diameter * math.exp(beta * mu - beta * dH)
     if acc > 1:
         return True
