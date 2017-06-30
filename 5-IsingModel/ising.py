@@ -254,7 +254,7 @@ def adsorption(tube):
     dH = H2 - H1
 
     print("dH = " + str(dH))
-    return nanotube, dH
+    return nanotube, dH, orientation
 
 def desorption(tube):
     nanotube = np.copy(tube)
@@ -268,13 +268,15 @@ def desorption(tube):
 
     print(str(trial_ring) + ', ' + str(trial_triangle))
 
+    orientation = nanotube[trial_ring, trial_triangle] 
+
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
     dH = - energy(sub_nt)
 
     nanotube[trial_ring, trial_triangle] = 7
 
     print("dH = " + str(dH))
-    return nanotube, dH
+    return nanotube, dH, orientation
 
 def rotationW(tube):
     nanotube = np.copy(tube)
@@ -289,6 +291,8 @@ def rotationW(tube):
         trial_ring = random.randrange(1, 2 * 2 * units, 2)
         trial_triangle = random.randint(0, 2 * diameter - 1)
 
+    pre = nanotube[trial_ring, trial_triangle]
+
     orientation = random.randint(8, 13)
 
     sub_nt = sub_nanotube(nanotube, trial_ring, trial_triangle)
@@ -301,7 +305,7 @@ def rotationW(tube):
     dH = H2 - H1
 
     print("dH = " + str(dH))
-    return nanotube, dH
+    return nanotube, dH, pre, orientation
 
 def rotationSi(tube):
     nanotube = np.copy(tube)
@@ -378,7 +382,9 @@ def main(steps, temp, mu):
     nt = np.zeros((2 * 2 * units, 2 * diameter))
 
     initialize(nt)
-    n_ads = 0
+    n_ads = 0.0
+    n_flat = 0.0
+    n_tilted = 0.0
 
     for n in range(steps):
         out.write("Step: " + str(n) + '\n')
@@ -391,12 +397,16 @@ def main(steps, temp, mu):
                 if n_ads == 2 * 2 * units * diameter:
                     print("Rejected")
                 else:
-                    nt_post, dH = adsorption(nt)
+                    nt_post, dH, orientation = adsorption(nt)
                     if accept_ads(dH, beta, n_ads, mu):
                         print("Accepted")
                         nt = nt_post
                         H += dH
                         n_ads +=1
+                        if orientation < 11:
+                            n_tilted += 1
+                        else:
+                            n_flat += 1
                     else :
                         print("Rejected")
 
@@ -405,12 +415,16 @@ def main(steps, temp, mu):
                 if n_ads == 0:
                     print("Rejected")
                 else:
-                    nt_post, dH = desorption(nt)
+                    nt_post, dH, orientation = desorption(nt)
                     if accept_des(dH, beta, n_ads, mu):
                         print("Accepted")
                         nt = nt_post
                         H += dH
                         n_ads -=1
+                        if orientation < 11:
+                            n_tilted -= 1
+                        else:
+                            n_flat -= 1
                     else :
                         print("Rejected")
 
@@ -419,11 +433,19 @@ def main(steps, temp, mu):
             if n_ads == 0:
                 print("Rejected")
             else:
-                nt_post, dH = rotationW(nt)
+                nt_post, dH, pre, post = rotationW(nt)
                 if accept_NVT(dH, beta):
                     print("Accepted")
                     nt = nt_post
                     H += dH
+                    if pre < 11:
+                        n_tilted -= 1
+                    else:
+                        n_flat -= 1
+                    if post < 11:
+                        n_tilted += 1
+                    else:
+                        n_flat += 1
                 else :
                     print("Rejected")
 
@@ -438,6 +460,17 @@ def main(steps, temp, mu):
                 print("Rejected")
         print_nt(nt)
         print("N_ads = " + str(n_ads) + "\n")
+        print("Occupation = " + str(n_ads/(2 * units * 2 *diameter)*100) + "% \n")
+        print("N_flat = " + str(n_flat) + "\n")
+        if n_ads:
+            print("Flat percentage = " + str(n_flat/n_ads*100) + " %\n")
+        else:
+            print("Flat percentage = 0 %\n")
+        print("N_tilted = " + str(n_tilted) + "\n")
+        if n_ads:
+            print("Tilted percentage = " + str(n_tilted/n_ads*100) + " %\n")
+        else:
+            print("Tilted percentage = 0 %\n")
         print("Energy = " + str(H) + " HB energy\n")
 
 
